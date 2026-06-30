@@ -1,0 +1,12 @@
+body {
+  margin: 0;
+  font-family: 'Outfit', sans-serif;
+  background-color: #f4f6f8;
+  color: #1a1f36;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}

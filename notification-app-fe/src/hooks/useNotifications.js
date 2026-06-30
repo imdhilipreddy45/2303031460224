@@ -1,20 +1,51 @@
 import { useState, useEffect } from "react";
-import { fetchNotifications } from "../apis/notifications";
+import { fetchNotifications } from "../api/notifications";
 
-export function useNotifications() {
+export function useNotifications(page = 1, filter = "All") {
   const [notifications, setNotifications] = useState([]);
-  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
+    let active = true;
+    
     const load = async () => {
-      const data = await fetchNotifications();
-      setNotifications(data.notifications ?? []);
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const data = await fetchNotifications({ page, notification_type: filter });
+        
+        if (active) {
+          setNotifications(data.notifications ?? []);
+        }
+      } catch (err) {
+        if (active) {
+          setError(err.message || "Failed to fetch notifications");
+          setNotifications([]);
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
     };
 
     load();
-  }, [notifications]);
 
-  const totalPages = 0;
+    return () => {
+      active = false;
+    };
+  }, [page, filter]);
 
-  return { notifications, total, totalPages, loading: false, error: true };
+  // Dynamically calculate totalPages: if page returns 10 items (the page limit), we assume
+  // there could be a next page and set count to page + 1. Otherwise, we cap it at current page.
+  const totalPages = notifications.length === 10 ? page + 1 : page;
+
+  return {
+    notifications,
+    totalPages,
+    loading,
+    error,
+  };
 }
